@@ -1,0 +1,87 @@
+/* Shared by Login and Register. */
+.auth-content {
+  --background: var(--chat-gradient);
+}
+
+.auth-wrapper {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px calc(32px + env(safe-area-inset-bottom));
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--chat-surface);
+  border-radius: 28px;
+  padding: 32px 24px 20px;
+  box-shadow: 0 24px 60px rgba(20, 12, 60, 0.35);
+}
+
+.auth-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 20px;
+  background: var(--chat-gradient);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.4);
+}
+
+.auth-title {
+  margin: 0;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.auth-subtitle {
+  margin: 6px 0 24px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--chat-muted);
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-input {
+  --border-radius: 14px;
+  --highlight-color-focused: var(--ion-color-primary);
+}
+
+.auth-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--ion-color-danger);
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+}
+
+.auth-submit {
+  --background: var(--chat-gradient);
+  /* White in both modes: the dark palette's primary-contrast is dark and unreadable on the gradient. */
+  --color: #fff;
+  --border-radius: 14px;
+  --box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+  height: 50px;
+  margin-top: 6px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.auth-switch {
+  margin-top: 8px;
+  text-transform: none;
+  font-weight: 600;
+}

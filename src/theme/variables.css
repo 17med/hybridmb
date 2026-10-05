@@ -1,2 +1,45 @@
 /* For information on how to create your own theme, please refer to:
 http://ionicframework.com/docs/theming/ */
+
+/* Brand: violet → blue gradient. Ionic "primary" is the violet end so buttons/links match. */
+:root {
+  /* System fonts only: the app must look right offline, with no web-font download. */
+  --ion-font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --ion-color-primary: #7c3aed;
+  --ion-color-primary-rgb: 124, 58, 237;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #6d33d0;
+  --ion-color-primary-tint: #894eef;
+
+  --chat-gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%);
+  --chat-bg: #f6f5fb;
+  --chat-surface: #ffffff;
+  --chat-bubble-other: #ffffff;
+  --chat-bubble-other-text: #1f1d2b;
+  --chat-muted: #8a87a0;
+  --chat-border: rgba(31, 29, 43, 0.08);
+  --chat-online: #22c55e;
+  --chat-shadow: 0 1px 2px rgba(31, 29, 43, 0.06), 0 4px 14px rgba(31, 29, 43, 0.06);
+}
+
+/* Matches the dark.system.css palette imported in App.tsx (follows the OS setting). */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #a78bfa;
+    --ion-color-primary-rgb: 167, 139, 250;
+    --ion-color-primary-contrast: #14121f;
+    --ion-color-primary-contrast-rgb: 20, 18, 31;
+    --ion-color-primary-shade: #9379dc;
+    --ion-color-primary-tint: #b097fb;
+
+    --chat-bg: #12111a;
+    --chat-surface: #1b1a26;
+    --chat-bubble-other: #262433;
+    --chat-bubble-other-text: #ece9f6;
+    --chat-muted: #8f8ba6;
+    --chat-border: rgba(255, 255, 255, 0.07);
+    --chat-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+}

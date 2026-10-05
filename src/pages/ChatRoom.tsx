@@ -6,15 +6,15 @@ import {
   IonHeader,
   IonIcon,
   IonPage,
-  IonText,
   IonTextarea,
   IonTitle,
   IonToolbar,
   useIonToast,
 } from '@ionic/react';
+import { AppwriteException } from 'appwrite';
 import type { RealtimeSubscription } from 'appwrite';
-import { logOutOutline, send } from 'ionicons/icons';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { chatbubbles, chatbubblesOutline, logOutOutline, send } from 'ionicons/icons';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Author,
   listRecentMessages,
@@ -26,6 +26,7 @@ import {
 import { listPresence, markTyping, sendHeartbeat, subscribeToPresence } from '../appwrite/presenceRepository';
 import { useAuth } from '../auth/AuthContext';
 import MessageBubble from '../components/MessageBubble';
+import { buildTimeline } from '../chat/messageLayout';
 import {
   describeTyping,
   HEARTBEAT_INTERVAL_MS,
@@ -33,14 +34,23 @@ import {
   Presence,
   typingUserNames,
 } from '../chat/presenceRules';
+import './ChatRoom.css';
 
 // Re-render cadence for time-based state (typing expiry, offline detection) when no event arrives.
 const CLOCK_TICK_MS = 1_000;
 // Do not send a typing update on every keystroke; one per window is enough.
 const TYPING_THROTTLE_MS = 2_000;
 
+/**
+ * Appends Appwrite's own reason (e.g. "Table with the requested ID could not be found.") so setup
+ * problems are diagnosable on the device. Appwrite error messages carry no personal data.
+ */
+function withReason(summary: string, error: unknown): string {
+  return error instanceof AppwriteException ? `${summary} ${error.message}` : summary;
+}
+
 /** Subscribes once, and unsubscribes correctly even if unmounted before subscribe resolves. */
-function useRealtime(subscribe: () => Promise<RealtimeSubscription>, onError: () => void) {
+function useRealtime(subscribe: () => Promise<RealtimeSubscription>, onError: (error: unknown) => void) {
   useEffect(() => {
     let subscription: RealtimeSubscription | null = null;
     let isCancelled = false;
@@ -69,7 +79,7 @@ function useMessages(onError: (text: string) => void) {
     listRecentMessages()
       .then(setMessages)
       // Fails open: keep showing what we have; the user is told history could not refresh.
-      .catch(() => onError('Could not load messages.'));
+      .catch((error) => onError(withReason('Could not load messages.', error)));
   }, [onError]);
 
   useEffect(() => {
@@ -85,7 +95,10 @@ function useMessages(onError: (text: string) => void) {
     [],
   );
   // Fails open: the chat still sends and reloads, only live delivery is lost.
-  const onSubscribeError = useCallback(() => onError('Live updates unavailable.'), [onError]);
+  const onSubscribeError = useCallback(
+    (error: unknown) => onError(withReason('Live updates unavailable.', error)),
+    [onError],
+  );
   useRealtime(subscribe, onSubscribeError);
 
   const append = useCallback((m: Message) => setMessages((prev) => addIfMissing(prev, m)), []);
@@ -140,13 +153,21 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ online, onLogout }) => (
-  <IonHeader>
+  <IonHeader className="chat-header">
     <IonToolbar>
       <IonTitle>
-        Global room
-        <IonText color="medium">
-          <div style={{ fontSize: 12 }}>{online.length} online: {online.map((p) => p.userName).join(', ')}</div>
-        </IonText>
+        <div className="chat-header-title">
+          <div className="chat-header-logo">
+            <IonIcon icon={chatbubbles} />
+          </div>
+          <div className="chat-header-text">
+            <div className="chat-header-name">Global room</div>
+            <div className="chat-header-online">
+              <span className="online-dot" />
+              {online.length} online · {online.map((p) => p.userName).join(', ')}
+            </div>
+          </div>
+        </div>
       </IonTitle>
       <IonButtons slot="end">
         <IonButton onClick={onLogout} aria-label="Log out">
@@ -155,6 +176,53 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ online, onLogout }) => (
       </IonButtons>
     </IonToolbar>
   </IonHeader>
+);
+
+const MessageList: React.FC<{ messages: Message[]; selfId: string }> = ({ messages, selfId }) => {
+  const timeline = useMemo(() => buildTimeline(messages, new Date()), [messages]);
+  if (messages.length === 0) {
+    return (
+      <div className="chat-empty">
+        <IonIcon icon={chatbubblesOutline} />
+        <strong>No messages yet</strong>
+        <span>Say hi to everyone 👋</span>
+      </div>
+    );
+  }
+  return (
+    <>
+      {timeline.map((item) =>
+        item.kind === 'day' ? (
+          <div key={item.key} className="day-separator">
+            <span>{item.label}</span>
+          </div>
+        ) : (
+          <MessageBubble
+            key={item.key}
+            message={item.message}
+            isOwn={item.message.userId === selfId}
+            isFirstInGroup={item.isFirstInGroup}
+            isLastInGroup={item.isLastInGroup}
+          />
+        ),
+      )}
+    </>
+  );
+};
+
+const TypingIndicator: React.FC<{ text: string }> = ({ text }) => (
+  <div className="typing-indicator" aria-live="polite">
+    {text && (
+      <>
+        <span className="typing-dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+        {text}
+      </>
+    )}
+  </div>
 );
 
 interface ComposerProps {
@@ -166,30 +234,29 @@ interface ComposerProps {
 }
 
 const Composer: React.FC<ComposerProps> = ({ draft, typingText, isSending, onDraftChange, onSend }) => (
-  <IonFooter>
-    <IonText color="medium">
-      <div style={{ fontSize: 12, padding: '0 16px', minHeight: 16 }}>{typingText}</div>
-    </IonText>
+  <IonFooter className="chat-footer">
+    <TypingIndicator text={typingText} />
     <IonToolbar>
-      <IonTextarea
-        autoGrow
-        rows={1}
-        maxlength={MAX_MESSAGE_LENGTH}
-        placeholder="Message"
-        value={draft}
-        onIonInput={(e) => onDraftChange(e.detail.value ?? '')}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            onSend();
-          }
-        }}
-      />
-      <IonButtons slot="end">
-        <IonButton onClick={onSend} disabled={isSending || !draft.trim()} aria-label="Send">
-          <IonIcon slot="icon-only" icon={send} />
-        </IonButton>
-      </IonButtons>
+      <div className="composer">
+        <IonTextarea
+          className="composer-input"
+          autoGrow
+          rows={1}
+          maxlength={MAX_MESSAGE_LENGTH}
+          placeholder="Message…"
+          value={draft}
+          onIonInput={(e) => onDraftChange(e.detail.value ?? '')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              onSend();
+            }
+          }}
+        />
+        <button className="send-button" onClick={onSend} disabled={isSending || !draft.trim()} aria-label="Send">
+          <IonIcon icon={send} />
+        </button>
+      </div>
     </IonToolbar>
   </IonFooter>
 );
@@ -198,7 +265,8 @@ const ChatRoom: React.FC<{ user: Author }> = ({ user }) => {
   const { logout } = useAuth();
   const [presentToast] = useIonToast();
   const showError = useCallback(
-    (text: string) => presentToast({ message: text, duration: 2500, color: 'danger' }),
+    // Long enough to read Appwrite's reason on a phone.
+    (text: string) => presentToast({ message: text, duration: 6000, color: 'danger' }),
     [presentToast],
   );
   const { messages, append } = useMessages(showError);
@@ -219,9 +287,9 @@ const ChatRoom: React.FC<{ user: Author }> = ({ user }) => {
     try {
       append(await sendMessage(user, body));
       setDraft('');
-    } catch {
+    } catch (error) {
       // Fails closed: the message was not stored, so it stays in the input for a retry.
-      showError('Message not sent. Try again.');
+      showError(withReason('Message not sent.', error));
     } finally {
       setIsSending(false);
     }
@@ -230,10 +298,8 @@ const ChatRoom: React.FC<{ user: Author }> = ({ user }) => {
   return (
     <IonPage>
       <ChatHeader online={online} onLogout={() => logout().catch(() => showError('Logout failed.'))} />
-      <IonContent ref={contentRef} className="ion-padding">
-        {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} isOwn={m.userId === user.id} />
-        ))}
+      <IonContent ref={contentRef} className="chat-content">
+        <MessageList messages={messages} selfId={user.id} />
       </IonContent>
       <Composer
         draft={draft}
