@@ -7,19 +7,22 @@ on:
 permissions:
   contents: read
 
-# Baked into the Vite bundle at build time (see .env.example and docs/APPWRITE_SETUP.md).
 env:
-  VITE_APPWRITE_ENDPOINT: ${{ secrets.VITE_APPWRITE_ENDPOINT }}
-  VITE_APPWRITE_PROJECT_ID: ${{ secrets.VITE_APPWRITE_PROJECT_ID }}
-  VITE_APPWRITE_DATABASE_ID: ${{ secrets.VITE_APPWRITE_DATABASE_ID }}
-  VITE_APPWRITE_MESSAGES_TABLE_ID: ${{ secrets.VITE_APPWRITE_MESSAGES_TABLE_ID }}
-  VITE_APPWRITE_PRESENCE_TABLE_ID: ${{ secrets.VITE_APPWRITE_PRESENCE_TABLE_ID }}
   # Same Node version the project was built and verified with locally.
   NODE_VERSION: '26.10.0'
 
 jobs:
   check:
     runs-on: ubuntu-24.04
+    # The Appwrite secrets live in the GitHub Environment "deployment"; only jobs that
+    # name it can read them. Values are baked into the Vite bundle (see .env.example).
+    environment: deployment
+    env:
+      VITE_APPWRITE_ENDPOINT: ${{ secrets.VITE_APPWRITE_ENDPOINT }}
+      VITE_APPWRITE_PROJECT_ID: ${{ secrets.VITE_APPWRITE_PROJECT_ID }}
+      VITE_APPWRITE_DATABASE_ID: ${{ secrets.VITE_APPWRITE_DATABASE_ID }}
+      VITE_APPWRITE_MESSAGES_TABLE_ID: ${{ secrets.VITE_APPWRITE_MESSAGES_TABLE_ID }}
+      VITE_APPWRITE_PRESENCE_TABLE_ID: ${{ secrets.VITE_APPWRITE_PRESENCE_TABLE_ID }}
     steps:
       - uses: actions/checkout@v7.0.1
       # Fail closed: Vite builds fine without these, but the app would refuse to start on the device.
@@ -28,7 +31,7 @@ jobs:
           for name in VITE_APPWRITE_ENDPOINT VITE_APPWRITE_PROJECT_ID VITE_APPWRITE_DATABASE_ID \
                       VITE_APPWRITE_MESSAGES_TABLE_ID VITE_APPWRITE_PRESENCE_TABLE_ID; do
             if [ -z "${!name}" ]; then
-              echo "::error::GitHub secret $name is missing (Settings > Secrets and variables > Actions)."
+              echo "::error::Secret $name is missing from the GitHub Environment \"deployment\" (Settings > Environments > deployment)."
               exit 1
             fi
           done
@@ -43,6 +46,15 @@ jobs:
   android:
     needs: check
     runs-on: ubuntu-24.04
+    # The Appwrite secrets live in the GitHub Environment "deployment"; only jobs that
+    # name it can read them. Values are baked into the Vite bundle (see .env.example).
+    environment: deployment
+    env:
+      VITE_APPWRITE_ENDPOINT: ${{ secrets.VITE_APPWRITE_ENDPOINT }}
+      VITE_APPWRITE_PROJECT_ID: ${{ secrets.VITE_APPWRITE_PROJECT_ID }}
+      VITE_APPWRITE_DATABASE_ID: ${{ secrets.VITE_APPWRITE_DATABASE_ID }}
+      VITE_APPWRITE_MESSAGES_TABLE_ID: ${{ secrets.VITE_APPWRITE_MESSAGES_TABLE_ID }}
+      VITE_APPWRITE_PRESENCE_TABLE_ID: ${{ secrets.VITE_APPWRITE_PRESENCE_TABLE_ID }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.0.0
@@ -78,6 +90,15 @@ jobs:
   linux-deb:
     needs: check
     runs-on: ubuntu-24.04
+    # The Appwrite secrets live in the GitHub Environment "deployment"; only jobs that
+    # name it can read them. Values are baked into the Vite bundle (see .env.example).
+    environment: deployment
+    env:
+      VITE_APPWRITE_ENDPOINT: ${{ secrets.VITE_APPWRITE_ENDPOINT }}
+      VITE_APPWRITE_PROJECT_ID: ${{ secrets.VITE_APPWRITE_PROJECT_ID }}
+      VITE_APPWRITE_DATABASE_ID: ${{ secrets.VITE_APPWRITE_DATABASE_ID }}
+      VITE_APPWRITE_MESSAGES_TABLE_ID: ${{ secrets.VITE_APPWRITE_MESSAGES_TABLE_ID }}
+      VITE_APPWRITE_PRESENCE_TABLE_ID: ${{ secrets.VITE_APPWRITE_PRESENCE_TABLE_ID }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.0.0

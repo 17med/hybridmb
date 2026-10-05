@@ -73,8 +73,10 @@ To erase a user completely, in the Appwrite console:
 2. `android` — debug APK, downloadable as artifact `hypbridchat-android-debug`.
 3. `linux-deb` — `.deb` via cordova-electron, artifact `hypbridchat-linux-deb`.
 
-Add these under *GitHub repo → Settings → Secrets and variables → Actions → New repository secret*
-(same values as your local `.env`):
+All three jobs use the GitHub **Environment `deployment`** (`environment: deployment` in the
+workflow). Add these as *environment* secrets under *GitHub repo → Settings → Environments →
+deployment → Environment secrets* (same values as your local `.env`). Repository-level secrets
+with the same names also work, but environment secrets take precedence:
 
 | Secret | Value |
 |---|---|
