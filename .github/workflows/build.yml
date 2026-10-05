@@ -1,0 +1,98 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Baked into the Vite bundle at build time (see .env.example and docs/APPWRITE_SETUP.md).
+env:
+  VITE_APPWRITE_ENDPOINT: ${{ secrets.VITE_APPWRITE_ENDPOINT }}
+  VITE_APPWRITE_PROJECT_ID: ${{ secrets.VITE_APPWRITE_PROJECT_ID }}
+  VITE_APPWRITE_DATABASE_ID: ${{ secrets.VITE_APPWRITE_DATABASE_ID }}
+  VITE_APPWRITE_MESSAGES_TABLE_ID: ${{ secrets.VITE_APPWRITE_MESSAGES_TABLE_ID }}
+  VITE_APPWRITE_PRESENCE_TABLE_ID: ${{ secrets.VITE_APPWRITE_PRESENCE_TABLE_ID }}
+  # Same Node version the project was built and verified with locally.
+  NODE_VERSION: '26.10.0'
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      # Fail closed: Vite builds fine without these, but the app would refuse to start on the device.
+      - name: Check Appwrite secrets are set
+        run: |
+          for name in VITE_APPWRITE_ENDPOINT VITE_APPWRITE_PROJECT_ID VITE_APPWRITE_DATABASE_ID \
+                      VITE_APPWRITE_MESSAGES_TABLE_ID VITE_APPWRITE_PRESENCE_TABLE_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::GitHub secret $name is missing (Settings > Secrets and variables > Actions)."
+              exit 1
+            fi
+          done
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx vitest run
+
+  android:
+    needs: check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            cordova/package-lock.json
+      - uses: actions/setup-java@v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      # Versions required by cordova-android 15.1.0 (framework/cdv-gradle-config-defaults.json).
+      - uses: android-actions/setup-android@v4.0.4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v6.4.0
+        with:
+          gradle-version: '8.14.2'
+          # Open-source GitHub Actions cache instead of the default commercial caching service.
+          cache-provider: basic
+      - run: npm ci
+      - run: npm ci
+        working-directory: cordova
+      - run: npm run android:build
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: hypbridchat-android-debug
+          path: cordova/platforms/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+  linux-deb:
+    needs: check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            cordova/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: cordova
+      - run: npm run linux:build
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: hypbridchat-linux-deb
+          path: cordova/platforms/electron/build/*.deb
+          if-no-files-found: error
