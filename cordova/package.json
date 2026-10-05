@@ -1,0 +1,18 @@
+{
+  "name": "com.ahmed.hypbridchat",
+  "displayName": "HypbridChat",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Cordova wrapper packaging the Vite build in www/ for Android and Linux (Electron).",
+  "devDependencies": {
+    "cordova-android": "15.1.0",
+    "cordova-electron": "4.0.0"
+  },
+  "cordova": {
+    "platforms": [
+      "android",
+      "electron"
+    ],
+    "plugins": {}
+  }
+}

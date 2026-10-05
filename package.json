@@ -1,0 +1,51 @@
+{
+  "name": "hypbridchat",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test.e2e": "cypress run",
+    "test.unit": "vitest",
+    "lint": "eslint",
+    "android:build": "npm run build && cd cordova && ../node_modules/.bin/cordova prepare android && ../node_modules/.bin/cordova build android",
+    "android:run": "npm run build && cd cordova && ../node_modules/.bin/cordova run android",
+    "linux:build": "npm run build && cd cordova && ../node_modules/.bin/cordova prepare electron && ../node_modules/.bin/cordova build electron --release"
+  },
+  "dependencies": {
+    "@ionic/react": "9.0.6",
+    "@ionic/react-router": "9.0.6",
+    "appwrite": "28.1.0",
+    "ionicons": "8.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-router": "6.30.6",
+    "react-router-dom": "6.30.6"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "5.17.0",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.4",
+    "@vitejs/plugin-legacy": "8.2.3",
+    "@vitejs/plugin-react": "6.1.2",
+    "cordova": "13.0.0",
+    "cypress": "13.17.0",
+    "eslint": "9.39.5",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-react-refresh": "0.4.26",
+    "globals": "15.15.0",
+    "jsdom": "22.1.0",
+    "terser": "5.51.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.1",
+    "vite": "8.3.2",
+    "vitest": "4.0.18"
+  },
+  "description": "An Ionic project"
+}

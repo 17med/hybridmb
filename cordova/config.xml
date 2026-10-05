@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.ahmed.hypbridchat" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>HypbridChat</name>
+    <description>Realtime single-room chat (Ionic React + Appwrite).</description>
+    <!-- Required by cordova-electron; the email becomes the .deb Maintainer field. Placeholder: replace with a project address. -->
+    <author email="maintainer@hypbridchat.invalid" href="https://github.com">HypbridChat</author>
+    <content src="index.html" />
+    <!-- Pin the WebView origin to https://localhost so it matches the Appwrite Web platform hostname "localhost". -->
+    <preference name="Scheme" value="https" />
+    <preference name="Hostname" value="localhost" />
+    <!-- Appwrite Cloud REST + realtime websocket; other navigation stays blocked. -->
+    <access origin="https://*.cloud.appwrite.io" />
+    <access origin="wss://*.cloud.appwrite.io" />
+    <allow-intent href="https://*/*" />
+    <platform name="electron">
+        <!-- Electron cannot register the reserved "https" scheme set above; it serves the app from app://localhost. -->
+        <preference name="Scheme" value="app" />
+        <preference name="Hostname" value="localhost" />
+    </platform>
+</widget>
