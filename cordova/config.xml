@@ -13,8 +13,10 @@
     <access origin="wss://*.cloud.appwrite.io" />
     <allow-intent href="https://*/*" />
     <platform name="electron">
-        <!-- Electron cannot register the reserved "https" scheme set above; it serves the app from app://localhost. -->
-        <preference name="Scheme" value="app" />
+        <!-- Electron cannot register the reserved "https" scheme set above. Appwrite rejects arbitrary
+             custom schemes ("Invalid Scheme ... app://localhost"); "appwrite-linux" is the scheme it
+             accepts once a Linux platform is registered in the Appwrite project (docs/APPWRITE_SETUP.md). -->
+        <preference name="Scheme" value="appwrite-linux" />
         <preference name="Hostname" value="localhost" />
     </platform>
 </widget>

@@ -12,10 +12,11 @@ to start if any variable is missing (`src/appwrite/client.ts`).
    whose WebView origin is pinned to `https://localhost` in `cordova/config.xml`
    (`Scheme` / `Hostname` preferences).
 3. *Auth → Settings*: make sure **Email/Password** is enabled.
-4. Linux desktop (.deb) build: Electron serves the app from `app://localhost`
-   (`<platform name="electron">` in `cordova/config.xml`; `https` is a reserved scheme there).
-   Whether Appwrite accepts this origin under the `localhost` Web platform is **not verified**;
-   if login fails on Linux with an origin/CORS error, this is the cause.
+4. Linux desktop (.deb) build: *Overview → Add platform → Linux* (any package name, e.g.
+   `com.ahmed.hypbridchat`). Electron serves the app from `appwrite-linux://localhost`
+   (`<platform name="electron">` in `cordova/config.xml`). Appwrite only accepts that scheme when a
+   Linux platform exists; without it, login fails with "Invalid Scheme" / "Invalid Origin".
+   (`https` is reserved in Electron, and arbitrary schemes such as `app://` are rejected by Appwrite.)
 
 ## 2. Database and tables
 
