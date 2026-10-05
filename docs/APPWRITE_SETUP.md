@@ -68,13 +68,13 @@ To erase a user completely, in the Appwrite console:
 
 ## 5. CI builds (GitHub Actions)
 
-`.github/workflows/build.yml` runs on every push to `main` and on `v*` tags:
+`.github/workflows/build.yml` runs only when a `v*` tag is pushed (pushes to branches build nothing):
 
 1. `check` — fails if an Appwrite secret is missing, then runs lint and unit tests.
 2. `android` — debug APK, downloadable as artifact `hypbridchat-android-debug`.
 3. `linux-deb` — `.deb` via cordova-electron, artifact `hypbridchat-linux-deb`.
-4. `release` — only when a `v*` tag is pushed (e.g. `git tag v1.0.0 && git push origin v1.0.0`):
-   creates a GitHub Release for that tag with the APK and `.deb` attached.
+4. `release` — after both builds succeed, creates a GitHub Release for the tag with the APK and
+   `.deb` attached. Trigger: `git tag v1.0.0 && git push origin v1.0.0`.
 
 Jobs 1–3 use the GitHub **Environment `deployment`** (`environment: deployment` in the
 workflow). Add these as *environment* secrets under *GitHub repo → Settings → Environments →

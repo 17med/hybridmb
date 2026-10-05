@@ -2,8 +2,8 @@ name: build
 
 on:
   push:
-    branches: [main]
-    # A version tag (e.g. v1.0.0) also publishes both builds as a GitHub Release.
+    # Builds run only for version tags (e.g. v1.0.0), which also publish a GitHub Release.
+    # Pushes to branches do not trigger anything.
     tags: ['v*']
 
 permissions:
