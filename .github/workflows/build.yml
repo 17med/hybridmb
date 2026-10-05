@@ -75,8 +75,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6.4.0
         with:
           gradle-version: '8.14.2'
-          # Open-source GitHub Actions cache instead of the default commercial caching service.
-          cache-provider: basic
+          # Only used to put Gradle on PATH for Cordova. Caching is off: the cache key is hashed from
+          # *.gradle files in the repo, and there are none — cordova/platforms/android is generated
+          # during the build (git-ignored), so the cache step fails with "No file ... matched".
+          cache-disabled: true
       - run: npm ci
       - run: npm ci
         working-directory: cordova
