@@ -15,9 +15,10 @@
     <platform name="android">
         <!-- Draw behind the status and navigation bars. Without this, cordova-android shrinks the WebView below
              solid system-bar strips and env(safe-area-inset-*) is always 0. The web layer clears the bars with
-             Ionic's --ion-safe-area-* (toolbars, src/pages/Auth.css, src/pages/ChatRoom.css). Trade-off: the
-             status-bar icons then follow the system theme (dark in light mode), so whatever sits under them
-             must follow the theme as well. -->
+             Ionic's ion-safe-area CSS variables (toolbars, src/pages/Auth.css, src/pages/ChatRoom.css).
+             Trade-off: the status-bar icons then follow the system theme (dark in light mode), so whatever sits
+             under them must follow the theme as well.
+             XML forbids a double hyphen inside comments, so CSS variable names are written without theirs. -->
         <preference name="AndroidEdgeToEdge" value="true" />
     </platform>
     <platform name="electron">
