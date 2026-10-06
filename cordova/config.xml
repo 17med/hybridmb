@@ -12,6 +12,14 @@
     <access origin="https://*.cloud.appwrite.io" />
     <access origin="wss://*.cloud.appwrite.io" />
     <allow-intent href="https://*/*" />
+    <platform name="android">
+        <!-- Draw behind the status and navigation bars. Without this, cordova-android shrinks the WebView below
+             solid system-bar strips and env(safe-area-inset-*) is always 0. The web layer clears the bars with
+             Ionic's --ion-safe-area-* (toolbars, src/pages/Auth.css, src/pages/ChatRoom.css). Trade-off: the
+             status-bar icons then follow the system theme (dark in light mode), so whatever sits under them
+             must follow the theme as well. -->
+        <preference name="AndroidEdgeToEdge" value="true" />
+    </platform>
     <platform name="electron">
         <!-- Electron cannot register the reserved "https" scheme set above. Appwrite rejects arbitrary
              custom schemes ("Invalid Scheme ... app://localhost"); "appwrite-linux" is the scheme it

@@ -22,6 +22,15 @@ http://ionicframework.com/docs/theming/ */
   --chat-border: rgba(31, 29, 43, 0.08);
   --chat-online: #22c55e;
   --chat-shadow: 0 1px 2px rgba(31, 29, 43, 0.06), 0 4px 14px rgba(31, 29, 43, 0.06);
+  --chat-own-shadow: 0 6px 16px rgba(79, 70, 229, 0.28);
+  --chat-card-shadow: 0 20px 50px rgba(49, 33, 120, 0.12);
+  /* Kept faint: the status bar draws over the top glow, and its icons are dark in light mode. */
+  --chat-glow-violet: rgba(124, 58, 237, 0.22);
+  --chat-glow-blue: rgba(37, 99, 235, 0.18);
+  /* Follows the dark-mode primary below, because --ion-color-primary-rgb is redefined there. */
+  --chat-focus-ring: rgba(var(--ion-color-primary-rgb), 0.22);
+  /* Readable line length on wide windows (Electron); phones are narrower than this. */
+  --chat-column-max: 760px;
 }
 
 /* Matches the dark.system.css palette imported in App.tsx (follows the OS setting). */
@@ -41,5 +50,9 @@ http://ionicframework.com/docs/theming/ */
     --chat-muted: #8f8ba6;
     --chat-border: rgba(255, 255, 255, 0.07);
     --chat-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --chat-own-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    --chat-card-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    --chat-glow-violet: rgba(167, 139, 250, 0.18);
+    --chat-glow-blue: rgba(96, 165, 250, 0.14);
   }
 }

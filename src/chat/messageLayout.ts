@@ -8,6 +8,14 @@ export type TimelineItem =
   | { kind: 'day'; key: string; label: string }
   | { kind: 'message'; key: string; message: Message; isFirstInGroup: boolean; isLastInGroup: boolean };
 
+export type MessageRow = Extract<TimelineItem, { kind: 'message' }>;
+
+export interface DaySection {
+  key: string;
+  label: string;
+  rows: MessageRow[];
+}
+
 /** Calendar day in the viewer's local time zone, e.g. "2026-10-05". */
 function localDayKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -50,6 +58,25 @@ export function buildTimeline(messages: Message[], now: Date): TimelineItem[] {
     });
   });
   return items;
+}
+
+/**
+ * Timeline → one section per day. A sticky day label only stays pinned inside its own parent, so
+ * sections let each label give way to the next day's instead of piling up at the top.
+ */
+export function groupTimelineByDay(items: TimelineItem[]): DaySection[] {
+  const sections: DaySection[] = [];
+  for (const item of items) {
+    if (item.kind === 'day') {
+      sections.push({ key: item.key, label: item.label, rows: [] });
+      continue;
+    }
+    const current = sections[sections.length - 1];
+    // buildTimeline always emits a day before that day's first message; anything else is a bug upstream.
+    if (!current) throw new Error(`Timeline row ${item.key} has no day before it.`);
+    current.rows.push(item);
+  }
+  return sections;
 }
 
 export function initialsOf(name: string): string {

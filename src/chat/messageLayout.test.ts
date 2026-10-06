@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Message } from '../appwrite/messagesRepository';
-import { avatarHue, buildTimeline, dayLabel, initialsOf } from './messageLayout';
+import { avatarHue, buildTimeline, dayLabel, groupTimelineByDay, initialsOf } from './messageLayout';
 
 // Local-time constructors keep day boundaries independent of the machine's time zone.
 const now = new Date(2026, 9, 5, 15, 0);
@@ -48,6 +48,33 @@ describe('buildTimeline', () => {
       now,
     );
     expect(items.map((i) => (i.kind === 'day' ? i.label : i.key))).toEqual(['Yesterday', '1', 'Today', '2', '3']);
+  });
+});
+
+describe('groupTimelineByDay', () => {
+  it('returns no sections for an empty timeline', () => {
+    expect(groupTimelineByDay([])).toEqual([]);
+  });
+
+  it('puts each day\'s messages under that day\'s label, in order', () => {
+    const items = buildTimeline(
+      [message('1', 'a', at(4, 22, 0)), message('2', 'a', at(5, 9, 0)), message('3', 'b', at(5, 9, 1))],
+      now,
+    );
+    const sections = groupTimelineByDay(items);
+    expect(sections.map((s) => [s.label, s.rows.map((r) => r.key)])).toEqual([
+      ['Yesterday', ['1']],
+      ['Today', ['2', '3']],
+    ]);
+  });
+
+  it('keeps the group flags computed by buildTimeline', () => {
+    const items = buildTimeline([message('1', 'a', at(5, 10, 0)), message('2', 'a', at(5, 10, 1))], now);
+    const [today] = groupTimelineByDay(items);
+    expect(today.rows.map((r) => [r.isFirstInGroup, r.isLastInGroup])).toEqual([
+      [true, false],
+      [false, true],
+    ]);
   });
 });
 

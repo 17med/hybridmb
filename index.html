@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Ionic App</title>
+    <title>HypbridChat</title>
     
     <base href="/" />
     
     <meta name="color-scheme" content="light dark" />
+    <!-- Browser/PWA bar tint. Mirrors --chat-bg in src/theme/variables.css: meta tags cannot read CSS variables. -->
+    <meta name="theme-color" content="#f6f5fb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#12111a" media="(prefers-color-scheme: dark)" />
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
@@ -20,7 +23,7 @@
     
     <!-- add to homescreen for ios -->
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Ionic App" />
+    <meta name="apple-mobile-web-app-title" content="HypbridChat" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   </head>
   <body>

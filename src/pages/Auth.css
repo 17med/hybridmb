@@ -1,23 +1,53 @@
-/* Shared by Login and Register. */
+/* Shared by Login, Register and the loading screen (App.tsx). */
+
+/*
+ * Theme-colored rather than the full brand gradient: on Android edge-to-edge (cordova/config.xml) the
+ * status bar draws over this background, and cordova-android colors its icons by the system theme
+ * (dark in light mode), so the area under them has to follow the theme too.
+ */
 .auth-content {
-  --background: var(--chat-gradient);
+  --background:
+    radial-gradient(70% 45% at 0% 0%, var(--chat-glow-violet), transparent 70%),
+    radial-gradient(70% 50% at 100% 100%, var(--chat-glow-blue), transparent 70%),
+    var(--chat-bg);
 }
 
+/*
+ * No header or footer toolbar here to absorb the insets, so the wrapper pads itself. Ionic's
+ * --ion-safe-area-* (core.css) wraps env(safe-area-inset-*) and is what the toolbars and toasts use too.
+ */
 .auth-wrapper {
   min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px calc(32px + env(safe-area-inset-bottom));
+  padding:
+    calc(32px + var(--ion-safe-area-top, 0px))
+    calc(20px + var(--ion-safe-area-right, 0px))
+    calc(32px + var(--ion-safe-area-bottom, 0px))
+    calc(20px + var(--ion-safe-area-left, 0px));
 }
 
 .auth-card {
   width: 100%;
   max-width: 400px;
   background: var(--chat-surface);
+  border: 1px solid var(--chat-border);
   border-radius: 28px;
   padding: 32px 24px 20px;
-  box-shadow: 0 24px 60px rgba(20, 12, 60, 0.35);
+  box-shadow: var(--chat-card-shadow);
+  animation: auth-card-in 320ms ease-out;
+}
+
+@keyframes auth-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .auth-logo {
@@ -84,4 +114,24 @@
   margin-top: 8px;
   text-transform: none;
   font-weight: 600;
+}
+
+/* Loading screen: the logo sits where Login's card will appear, so launch has no jump in color. */
+.auth-loading {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-loading .auth-logo {
+  margin: 0;
+}
+
+.auth-loading ion-spinner {
+  color: var(--ion-color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-card {
+    animation: none;
+  }
 }

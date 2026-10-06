@@ -25,8 +25,9 @@ import {
 } from '../appwrite/messagesRepository';
 import { listPresence, markTyping, sendHeartbeat, subscribeToPresence } from '../appwrite/presenceRepository';
 import { useAuth } from '../auth/AuthContext';
+import Avatar from '../components/Avatar';
 import MessageBubble from '../components/MessageBubble';
-import { buildTimeline } from '../chat/messageLayout';
+import { buildTimeline, groupTimelineByDay } from '../chat/messageLayout';
 import {
   describeTyping,
   HEARTBEAT_INTERVAL_MS,
@@ -40,6 +41,8 @@ import './ChatRoom.css';
 const CLOCK_TICK_MS = 1_000;
 // Do not send a typing update on every keystroke; one per window is enough.
 const TYPING_THROTTLE_MS = 2_000;
+// Three overlapping avatars plus the count still fit under the title on a 360px-wide phone.
+const MAX_HEADER_AVATARS = 3;
 
 /**
  * Appends Appwrite's own reason (e.g. "Table with the requested ID could not be found.") so setup
@@ -147,11 +150,32 @@ function useTypingSignal(user: Author) {
   }, [user]);
 }
 
+/** Who is online, as overlapping avatars. The full name list stays in the tooltip and the accessible name. */
+const OnlineSummary: React.FC<{ online: Presence[] }> = ({ online }) => {
+  const names = online.map((p) => p.userName).join(', ');
+  const hiddenCount = online.length - MAX_HEADER_AVATARS;
+  return (
+    <div className="chat-header-online" title={names}>
+      {online.length > 0 && (
+        <span className="online-stack" role="img" aria-label={`Online: ${names}`}>
+          {online.slice(0, MAX_HEADER_AVATARS).map((p) => (
+            <Avatar key={p.userId} userId={p.userId} name={p.userName} />
+          ))}
+          {hiddenCount > 0 && <span className="online-more">+{hiddenCount}</span>}
+        </span>
+      )}
+      <span className="online-dot" />
+      {online.length} online
+    </div>
+  );
+};
+
 interface ChatHeaderProps {
   online: Presence[];
   onLogout: () => void;
 }
 
+// No safe-area CSS here: Ionic pads the header's first toolbar with --ion-safe-area-top and every toolbar's sides.
 const ChatHeader: React.FC<ChatHeaderProps> = ({ online, onLogout }) => (
   <IonHeader className="chat-header">
     <IonToolbar>
@@ -162,10 +186,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ online, onLogout }) => (
           </div>
           <div className="chat-header-text">
             <div className="chat-header-name">Global room</div>
-            <div className="chat-header-online">
-              <span className="online-dot" />
-              {online.length} online · {online.map((p) => p.userName).join(', ')}
-            </div>
+            <OnlineSummary online={online} />
           </div>
         </div>
       </IonTitle>
@@ -179,7 +200,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ online, onLogout }) => (
 );
 
 const MessageList: React.FC<{ messages: Message[]; selfId: string }> = ({ messages, selfId }) => {
-  const timeline = useMemo(() => buildTimeline(messages, new Date()), [messages]);
+  const sections = useMemo(() => groupTimelineByDay(buildTimeline(messages, new Date())), [messages]);
   if (messages.length === 0) {
     return (
       <div className="chat-empty">
@@ -191,21 +212,22 @@ const MessageList: React.FC<{ messages: Message[]; selfId: string }> = ({ messag
   }
   return (
     <>
-      {timeline.map((item) =>
-        item.kind === 'day' ? (
-          <div key={item.key} className="day-separator">
-            <span>{item.label}</span>
+      {sections.map((section) => (
+        <section key={section.key} className="day-section">
+          <div className="day-separator">
+            <span>{section.label}</span>
           </div>
-        ) : (
-          <MessageBubble
-            key={item.key}
-            message={item.message}
-            isOwn={item.message.userId === selfId}
-            isFirstInGroup={item.isFirstInGroup}
-            isLastInGroup={item.isLastInGroup}
-          />
-        ),
-      )}
+          {section.rows.map((row) => (
+            <MessageBubble
+              key={row.key}
+              message={row.message}
+              isOwn={row.message.userId === selfId}
+              isFirstInGroup={row.isFirstInGroup}
+              isLastInGroup={row.isLastInGroup}
+            />
+          ))}
+        </section>
+      ))}
     </>
   );
 };
@@ -299,7 +321,9 @@ const ChatRoom: React.FC<{ user: Author }> = ({ user }) => {
     <IonPage>
       <ChatHeader online={online} onLogout={() => logout().catch(() => showError('Logout failed.'))} />
       <IonContent ref={contentRef} className="chat-content">
-        <MessageList messages={messages} selfId={user.id} />
+        <div className="chat-column">
+          <MessageList messages={messages} selfId={user.id} />
+        </div>
       </IonContent>
       <Composer
         draft={draft}

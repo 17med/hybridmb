@@ -1,5 +1,5 @@
 import type { Message } from '../appwrite/messagesRepository';
-import { avatarHue, initialsOf } from '../chat/messageLayout';
+import Avatar from './Avatar';
 
 interface MessageBubbleProps {
   message: Message;
@@ -11,19 +11,6 @@ interface MessageBubbleProps {
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
-
-const Avatar: React.FC<{ userId: string; name: string }> = ({ userId, name }) => {
-  const hue = avatarHue(userId);
-  return (
-    <div
-      className="avatar"
-      style={{ background: `linear-gradient(135deg, hsl(${hue} 70% 58%), hsl(${(hue + 40) % 360} 70% 48%))` }}
-      aria-hidden="true"
-    >
-      {initialsOf(name)}
-    </div>
-  );
-};
 
 /** One message. Avatar and name show on a group's first bubble, the time on its last. */
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwn, isFirstInGroup, isLastInGroup }) => {
